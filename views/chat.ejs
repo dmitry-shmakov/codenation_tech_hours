@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Group Chat on Node.js</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font: 13px Helvetica, Arial; }
+        form { background: #fff; padding: 3px; position: fixed; bottom: 0; width: 100%; border-color: #000; border-top-style: solid; border-top-width: 1px;}
+        form input { border-style: solid; border-width: 1px; padding: 10px; width: 85%; margin-right: .5%; }
+        form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; margin-left: 2%; }
+        #messages { list-style-type: none; margin: 0; padding: 0; }
+        #messages li { padding: 5px 10px; }
+        #messages li:nth-child(odd) { background: #eee; }
+        #users {
+            list-style: none;
+        }
+    </style>
+    <script src="../../socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <% include partials/head %>
+  </head>
+  <body>
+    <header> <% include partials/header %> </header>
+    <audio id="pikasound">
+        <source src="/public/pika.mp3" type="audio/mpeg">
+    </audio>
+    <div class="">
+        <div class="row">
+            <div class="col-sm" id="messagediv" style="height: 800px; overflow: auto;">
+                <div class="row">
+                    <div class="col-sm">
+                        <ul id="messages"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm">
+                <h1>List of active users</h1>
+                <ul id="users">
+                </ul>
+            </div>
+            <div class="col-sm">
+                <input type="checkbox" id="soundcheck" name="vehicle1" value="pika">
+                <label for="vehicle1"> Enable chat notification </label><br>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm">
+                <form action="/chat" method="POST" id="chatForm">
+                    <input id="txt" autocomplete="off" autofocus="on" oninput="isTyping()" placeholder="type your message here..." /><button>Send</button>
+                </form> 
+            </div>
+        </div>
+    </div>
+
+    <script>
+            let herokuUrl = 'https://codenation-nyc1-covid19.herokuapp.com/';
+            let localUrl = 'http://localhost:3000';
+            // var socket = io.connect(localUrl);
+            var socket = io.connect(herokuUrl);
+
+            function formatAMPM(date) {
+                var hours = date.getHours();
+                var minutes = date.getMinutes();
+                var seconds = date.getSeconds();
+                var ampm = hours >= 12 ? 'PM' : 'PM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                minutes = minutes < 10 ? '0'+minutes : minutes;
+                var strTime = hours + ':' + minutes + ':' + seconds  + ampm;
+                return strTime;
+            }
+
+            // submit text message without reload/refresh the page
+            $('form').submit(function(e){
+                e.preventDefault(); // prevents page reloading
+                if($('#txt').val().trim() != ""){
+                    socket.emit('chat_message', $('#txt').val());
+                }
+                $('#txt').val('');
+                return false;
+            });
+
+            // append the chat text message
+            socket.on('chat_message', function(msg){
+                var time = formatAMPM(new Date());
+                var timePTag = "<p style='font-size:x-small; display: inline;'>" + time + "</p>";
+                $('#messages').append($('<li>').html(timePTag + " " + msg).attr('id','fakeUser'));
+                
+                var element = document.getElementById("messagediv");
+                element.scrollTop = element.scrollHeight;            
+                if(document.getElementById("soundcheck").checked){
+                    var x = document.getElementById("pikasound").play();
+                }
+            });
+
+            // append text if someone is online
+            socket.on('is_online', function(username) {
+                $('#messages').append($('<li>').html('<b>'+username+'</b>' + " joined the chat..."));
+            });
+            socket.on('is_offline', function(username) {
+                $('#messages').append($('<li>').html(username + " left the chat..."));
+            });
+            socket.on('update_users', function(userArray) {
+                console.log(userArray)
+                $('#users').empty();
+                for(let i = 0; i < userArray.length; i++){
+                    $('#users').append($('<li>').html('🟢 ' + userArray[i]));
+                }
+
+            });
+
+            // ask username
+            var username = prompt('Please tell me your name');
+            var userColor = prompt('Type in a color.');
+            var secretPassword = prompt('Enter in secret password if you know it');
+            var payload = [username, userColor, secretPassword];
+            // socket.emit('user_color', userColor);
+            socket.emit('username', payload);
+    </script>
+  </body>
+</html>

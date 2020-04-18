@@ -1,0 +1,36 @@
+{
+  "name": "nodejs-boilerplate",
+  "version": "1.0.0",
+  "description": "Simple skeleton / boilerplate Node.js express app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benc-uk/nodejs-boilerplate.git"
+  },
+  "author": "Ben Coleman",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "apiai": "^4.0.3",
+    "axios": "^0.19.2",
+    "cheerio": "^1.0.0-rc.3",
+    "dotenv": "^4.0.0",
+    "ejs": "^2.5.7",
+    "express": "^4.16.1",
+    "latest-tweets": "^1.0.4",
+    "morgan": "^1.9.0",
+    "scrape-twitter": "^0.11.1",
+    "socketio": "^1.0.0",
+    "twit": "^2.2.11",
+    "twitter": "^1.7.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/node": "^7.8.7",
+    "@babel/preset-env": "^7.9.5"
+  }
+}
